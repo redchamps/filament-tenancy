@@ -32,7 +32,7 @@ Tenancy multi-database integration for FilamentPHP
 ## Installation
 
 ```bash
-composer require tomatophp/filament-tenancy
+composer require redchamps/filament-tenancy
 ```
 after install your package please run this command
 
