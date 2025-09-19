@@ -2,6 +2,14 @@
 
 namespace TomatoPHP\FilamentTenancy\Filament\Resources;
 
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use TomatoPHP\FilamentTenancy\Filament\Resources\TenantResource\Pages;
 use TomatoPHP\FilamentTenancy\Filament\Resources\TenantResource\RelationManagers;
 use Filament\Forms;
@@ -21,7 +29,8 @@ class TenantResource extends Resource
 {
     protected static ?string $model = Tenant::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-globe-alt';
+
 
     public static function getNavigationGroup(): ?string
     {
@@ -43,16 +52,16 @@ class TenantResource extends Resource
         return trans('filament-tenancy::messages.title');
     }
 
-    public static function form(Form $form): Form
+    public static function form(\Filament\Schemas\Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make([
+        return $schema
+            ->components([
+                Section::make([
                     Forms\Components\TextInput::make('name')
                         ->label(trans('filament-tenancy::messages.columns.name'))
                         ->required()
                         ->unique(table:'tenants', ignoreRecord: true)->live(onBlur: true)
-                        ->afterStateUpdated(function(Forms\Set $set, $state) {
+                        ->afterStateUpdated(function(Set $set, $state) {
                             $set('id', $slug = \Str::of($state)->slug('_')->toString());
                             $set('domain', \Str::of($state)->slug()->toString());
                         }),
@@ -95,7 +104,7 @@ class TenantResource extends Resource
                     Forms\Components\Toggle::make('is_active')
                         ->label(trans('filament-tenancy::messages.columns.is_active'))
                         ->default(true),
-                ])->columns()
+                ])->columns()->columnSpanFull()
             ]);
     }
 
@@ -122,14 +131,14 @@ class TenantResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                Tables\Actions\Action::make('view')
+                Action::make('view')
                     ->label(trans('filament-tenancy::messages.actions.view'))
                     ->tooltip(trans('filament-tenancy::messages.actions.view'))
                     ->iconButton()
                     ->icon('heroicon-s-link')
                     ->url(fn($record) => request()->getScheme()."://".$record->domains()->first()?->domain .'.'.config('filament-tenancy.central_domain'). '/'. filament('filament-tenancy')->panel)
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('login')
+                Action::make('login')
                     ->label(trans('filament-tenancy::messages.actions.login'))
                     ->tooltip(trans('filament-tenancy::messages.actions.login'))
                     ->visible(filament('filament-tenancy')->allowImpersonate)
@@ -142,7 +151,7 @@ class TenantResource extends Resource
 
                         return redirect()->to(request()->getScheme()."://".$record->domains[0]->domain.'.'. config('filament-tenancy.central_domain') . '/login/url?token='.$token->token .'&email='. urlencode($record->email));
                     }),
-                Tables\Actions\Action::make('password')
+                Action::make('password')
                     ->label(trans('filament-tenancy::messages.actions.password'))
                     ->tooltip(trans('filament-tenancy::messages.actions.password'))
                     ->requiresConfirmation()
@@ -175,19 +184,19 @@ class TenantResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->label(trans('filament-tenancy::messages.actions.edit'))
                     ->tooltip(trans('filament-tenancy::messages.actions.edit'))
                     ->iconButton(),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->label(trans('filament-tenancy::messages.actions.delete'))
                     ->tooltip(trans('filament-tenancy::messages.actions.delete'))
                     ->iconButton(),
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
