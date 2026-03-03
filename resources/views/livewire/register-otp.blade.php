@@ -9,11 +9,11 @@
             </x-slot>
         </x-filament-panels::header.simple>
 
-        <x-filament-panels::form wire:submit.prevent="authenticate">
+        <form wire:submit.prevent="authenticate">
             {{ $this->form }}
 
             {{ $this->submitAction }}
-        </x-filament-panels::form>
+        </form>
 
         <div class="text-center">
             <span class="text-gray-400">Don't get the code? please {{ $this->getResendAction }}</span>
